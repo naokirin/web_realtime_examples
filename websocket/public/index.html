@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+  <div id="messages"></div>
+
+  <script>
+    const appendElement = (message) => {
+      const div = document.getElementById('messages');
+      const elm = document.createElement('p');
+      elm.textContent = message;
+      div.appendChild(elm);
+    };
+
+    const ws = new WebSocket('/ws');
+    let count = 0;
+
+    const intervalId = setInterval(() => {
+      ws.send(`クライアント: ${count}`);
+      appendElement(`挨拶${count} を送信しました`);
+      count += 1;
+    }, 1500);
+
+    ws.onopen = () => appendElement('接続しました');
+    ws.onmessage = (msg) => {
+      const response = msg.data;
+      const data = JSON.parse(event.data);
+      if (data.message === 'update') {
+        appendElement(`${data.message}: ${data.count}`);
+      }
+    };
+    ws.onclose = (event) => {
+      appendElement('接続が終了しました');
+      clearInterval(intervalId);
+    };
+    ws.onerror = (event) => {
+      appendElement('エラーが発生しました');
+      clearInterval(intervalId);
+    };
+  </script>
+</body>
+
+</html>
