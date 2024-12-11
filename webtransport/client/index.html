@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebTransport Client</title>
+</head>
+
+<body>
+    <script async>
+        async function connect() {
+            const url = 'https://127.0.0.1:4433/webtransport';
+            const transport = new WebTransport(url);
+
+            await transport.ready;
+
+            console.log('Connected to server');
+
+            const stream = await transport.incomingBidirectionalStreams;
+            //const writer = stream.writable.getWriter();
+            const reader = stream.getReader();
+
+            // const message = 'Hello, World';
+            //await writer.write(new TextEncoder().encode(message));
+
+            while (true) {
+                console.log('Waiting for message from server');
+                const { value } = await reader.read();
+                const reader2 = value.readable.getReader();
+                while (true) {
+                    const { done, value } = await reader2.read();
+                    if (done) {
+                        break;
+                    }
+                    console.log('Value type:', typeof value);
+                    console.log('Received from server:', new TextDecoder('utf-8').decode(value));
+                }
+            }
+        }
+
+        connect();
+    </script>
+</body>
+
+</html>
